@@ -3,11 +3,8 @@
 # coding style: pep8
 # __author__ = 'Long-T'
 
-import protocol
-import server_cmd
-
-pt = protocol
-sc = server_cmd
+import protocol as pt
+import server_cmd as sc
 
 
 MAP_CMD_FUN = {pt.CMD_NAME: sc.cmd_name,

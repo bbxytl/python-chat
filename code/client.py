@@ -3,11 +3,9 @@
 # __author__ = 'Long-T'
 
 import socket
-import protocol
+import protocol as pt
 import sys
 from threading import Thread
-
-pt = protocol
 
 
 class qqclient(object):

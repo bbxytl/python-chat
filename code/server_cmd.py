@@ -3,8 +3,7 @@
 # coding style: pep8
 # __author__ = 'Long-T'
 
-import protocol
-pt = protocol
+import protocol as pt
 
 
 def cmd_name(serv, args):

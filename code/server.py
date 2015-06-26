@@ -5,8 +5,8 @@
 import socket
 import threading
 # import struct
-import server_cmd
-import protocol
+import server_cmd as sc
+import protocol as pt
 import time
 import os
 
@@ -346,10 +346,7 @@ class qqserver(object):
         pt.send(toSocket, to_user, from_user, pt.MSG_TEXT, text)
 
 if __name__ == '__main__':
-    import server_cmd_map
-    pt = protocol
-    sc = server_cmd
-    scmap = server_cmd_map
+    import server_cmd_map as scmap
     file_name = 'users.dat'
     qq_server = qqserver('127.0.0.1', 18889, file_name)
     qq_server.run()
