@@ -12,10 +12,10 @@ def cmd_name(serv, args):
     user_id = args[0]
     client_socket = args[1]
 
-    names = serv.getUsers()
+    names = serv.get_users()
     text = ''
     for id, info in names.items():
-        text = text + str(id) +':'+ serv.getUserName(id)+ '\n'
+        text = text + str(id) +':'+ serv.get_user_name(id)+ '\n'
     pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_TEXT, text)
 
 
@@ -24,10 +24,10 @@ def cmd_online(serv, args):
     user_id = args[0]
     client_socket = args[1]
 
-    users = serv.getUsersOnline()
+    users = serv.get_usersonline()
     names = ''
     for uid in users.keys():
-        names = names + str(uid) + ':' + serv.getUserName(uid) + '\n'
+        names = names + str(uid) + ':' + serv.get_user_name(uid) + '\n'
     pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_TEXT, names)
 
 
@@ -39,12 +39,12 @@ def cmd_rename(serv, args):
     client_socket = args[1]
     if len(args) > 2:
         msg = args[2]
-    old_name = serv.setUserName(user_id, msg)
+    old_name = serv.set_user_name(user_id, msg)
     if old_name is None:
         return pt.MSG_ERROR
     else:
-        for uid, info in serv.getUsersOnline().items():
-            client_socket = serv.getUserSocket(uid)
+        for uid, info in serv.get_usersonline().items():
+            client_socket = serv.get_user_socket(uid)
             msg = '[{0}] now call :[{1}]'.format(old_name, msg)
             pt.send(client_socket, uid, pt.SERV_USER, pt.MSG_TEXT, msg)
 
@@ -58,9 +58,9 @@ def cmd_mdpwd(serv, args):
         return pt.MSG_ERROR
     input_oldpwd = args[2]
     input_newpwd = args[3]
-    oldPwd = serv.getUserPwd(user_id)
-    if serv.modifyPwd(user_id, input_oldpwd, input_newpwd) == True:
-        text = '[{0}:{1}] old PassWord is : {2}, Now is {3}'.format(user_id, serv.getUserName(user_id), oldPwd, cmd[1])
+    old_pwd = serv.get_user_pwd(user_id)
+    if serv.modify_pwd(user_id, input_oldpwd, input_newpwd) == True:
+        text = '[{0}:{1}] old PassWord is : {2}, Now is {3}'.format(user_id, serv.get_user_name(user_id), old_pwd, cmd[1])
         pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_TEXT, text)
     else:
         return pt.MSG_ERROR
@@ -71,14 +71,14 @@ def cmd_friends(serv, args):
     user_id = args[0]
     client_socket = args[1]
 
-    friends = serv.getFriends(user_id)
+    friends = serv.get_user_friends(user_id)
     text = ''
     for uid in friends:
         ol = '  '
         uid = int(uid)
-        if serv.isUserOnline(uid) == pt.FLAG_ONLINE:
+        if serv.isuseronline(uid) == pt.FLAG_ONLINE:
             ol = '* '
-        text = text + ol + str(uid) + ':' + serv.getUserName(uid) + '\n'
+        text = text + ol + str(uid) + ':' + serv.get_user_name(uid) + '\n'
     pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_TEXT, text)
 
 def cmd_add_friend(serv, args):
@@ -90,11 +90,11 @@ def cmd_add_friend(serv, args):
         return pt.MSG_ERROR
     try:
         fdId = int(args[2].strip())
-        if fdId not in serv.getUsers():
+        if fdId not in serv.get_users():
             text = '%s is not regist !' % fdId
             pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_ERROR, text)
-        if serv.addFriends(user_id, fdId):
-            text = 'You have a new friend :[{0}:{1}]'.format(fdId, serv.getUserName(fdId))
+        if serv.add_friend(user_id, fdId):
+            text = 'You have a new friend :[{0}:{1}]'.format(fdId, serv.get_user_name(fdId))
             pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_TEXT, text)
     except:
         return pt.MSG_ERROR
@@ -108,11 +108,11 @@ def cmd_del_friend(serv, args):
         return pt.MSG_ERROR
     try:
         fdId = int(args[2].strip())
-        if fdId not in serv.getFriends(user_id):
-            text = '[{0}:{1}] is not your friend ! Can\'t delete !'.format(fdId, serv.getUserName(fdId))
+        if fdId not in serv.get_user_friends(user_id):
+            text = '[{0}:{1}] is not your friend ! Can\'t delete !'.format(fdId, serv.get_user_name(fdId))
             pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_ERROR, text)
         else:
-            text = '[{0}:{1}] delete from your friends ! Now he/she is not your friend !'.format(fdId, serv.getUserName(fdId))
+            text = '[{0}:{1}] delete from your friends ! Now he/she is not your friend !'.format(fdId, serv.get_user_name(fdId))
             pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_TEXT, text)
     except:
         return pt.MSG_ERROR
@@ -129,15 +129,15 @@ def cmd_chat(serv, args):
         chatWithUserId = int(args[2].strip())
     except:
         return pt.MSG_ERROR
-    fdName = serv.getUserName(chatWithUserId)
+    fdName = serv.get_user_name(chatWithUserId)
     text = ''
-    if chatWithUserId not in serv.getUsers().keys():
+    if chatWithUserId not in serv.get_users().keys():
         text = '%s is not regist !' % chatWithUserId
         chatWithUserId = pt.SERV_USER
-    elif chatWithUserId not in serv.getUsersOnline():
+    elif chatWithUserId not in serv.get_usersonline():
         text = '%s is not online !' % fdName
         chatWithUserId = pt.SERV_USER
-    elif chatWithUserId not in serv.getFriends(user_id):
+    elif chatWithUserId not in serv.get_user_friends(user_id):
         text = '[{0}:{1}] is not your friend ! Please add he/she first !'.format(chatWithUserId, fdName)
         chatWithUserId = pt.SERV_USER
     else:
@@ -148,14 +148,14 @@ def cmd_quit(serv, args):
     print "cmd_quit"
     user_id = args[0]
     client_socket = args[1]
-    serv.setUserOnlineFlag(user_id, not pt.FLAG_ONLINE)
+    serv.set_useronline_flag(user_id, not pt.FLAG_ONLINE)
 
-    userSever = '0:server'
-    fuser = '{0}:{1}'.format(user_id, serv.getUserName(user_id))
-    quitString = '[from {0} to {1}] {1} Quit !'.format(userSever, fuser)
-    for id in serv.getUsersOnline().keys():
+    user_sever = '0:server'
+    fuser = '{0}:{1}'.format(user_id, serv.get_user_name(user_id))
+    quitString = '[from {0} to {1}] {1} Quit !'.format(user_sever, fuser)
+    for id in serv.get_usersonline().keys():
         if id != user_id:
-            onLineSocket = serv.getUserSocket(id)
+            onLineSocket = serv.get_user_socket(id)
             pt.send(onLineSocket, id, pt.SERV_USER, pt.MSG_FRIEND_QUIT, quitString)
     pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_QUIT, quitString)
     print quitString

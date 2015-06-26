@@ -25,43 +25,42 @@ class qqclient(object):
     def get_user_name(self):
         return self.user_name
 
-    def setCurChatUser(self, newChatUser):
-        oldChatUser = self.curchatuser
-        self.curchatuser = newChatUser
-        return oldChatUser
+    def set_curchatuser(self, new_chatuser):
+        old_chatuser = self.curchatuser
+        self.curchatuser = new_chatuser
+        return old_chatuser
 
-    def set_user_id(self, newUserId):
-        oldUserId = self.user_id
-        self.user_id = newUserId
-        return oldUserId
+    def set_user_id(self, new_user_id):
+        old_userid = self.user_id
+        self.user_id = new_user_id
+        return old_userid
 
-    def setUserName(self, newName):
-        oldName = self.user_name
-        self.user_name = newName
-        return oldName
+    def set_user_name(self, new_name):
+        oldname = self.user_name
+        self.user_name = new_name
+        return oldname
 
     def logon(self, user_id, user_pwd):
         pt.send(self.client_socket, pt.SERV_USER, user_id, pt.MSG_LOGON, user_pwd)
-        toUser, fromUser, msgType, msg = pt.recv(self.client_socket)
+        to_user, from_user, msg_type, msg = pt.recv(self.client_socket)
         print msg
-        if msgType == pt.MSG_LOGON:
+        if msg_type == pt.MSG_LOGON:
             return True
-        elif msgType == pt.MSG_ERROR:
+        elif msg_type == pt.MSG_ERROR:
             return False
-        elif msgType == pt.MSG_REGISTER:
-
-            while msgType == pt.MSG_REGISTER:
+        elif msg_type == pt.MSG_REGISTER:
+            while msg_type == pt.MSG_REGISTER:
                 msg = sys.stdin.readline().strip()
                 pt.send(self.client_socket, pt.SERV_USER, user_id, pt.MSG_REGISTER, msg)
-                toUser, fromUser, msgType, msg = pt.recv(self.client_socket)
+                to_user, from_user, msg_type, msg = pt.recv(self.client_socket)
                 print msg
-                if msgType == pt.MSG_LOGON:
+                if msg_type == pt.MSG_LOGON:
                     return None
         return False
 
     def run(self, user_id, user_pwd):
         self.set_user_id(user_id)
-        self.setCurChatUser(pt.SERV_USER)
+        self.set_curchatuser(pt.SERV_USER)
 
         input = [self.client_socket, sys.stdin]
 
@@ -79,14 +78,14 @@ class qqclient(object):
 
         sign = True
         while sign:
-            toUser, fromUser, msgType, msg = pt.recv(self.client_socket)
+            to_user, from_user, msg_type, msg = pt.recv(self.client_socket)
             try:
-                if msgType == pt.MSG_QUIT:
+                if msg_type == pt.MSG_QUIT:
                     prostdin.done = True
                     return
-                elif msgType == pt.MSG_CMD:
-                    self.curchatuser = toUser
-                elif msgType == pt.MSG_FRIEND_QUIT:
+                elif msg_type == pt.MSG_CMD:
+                    self.curchatuser = to_user
+                elif msg_type == pt.MSG_FRIEND_QUIT:
                     self.curchatuser = pt.SERV_USER
             finally:
                 print msg
@@ -105,11 +104,11 @@ class processstdin(Thread):
         client = self.client
         while not self.done:
             data = raw_input()
-            dataType = pt.MSG_TEXT
+            data_type = pt.MSG_TEXT
             if len(data)>0 and data[0] == '/':
-                dataType = pt.MSG_CMD
+                data_type = pt.MSG_CMD
                 client.curchatuser = pt.SERV_USER
-            pt.send(self.client_socket, client.curchatuser, client.user_id, dataType, data)
+            pt.send(self.client_socket, client.curchatuser, client.user_id, data_type, data)
 
 
 if __name__ == '__main__':

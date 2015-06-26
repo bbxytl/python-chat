@@ -65,43 +65,43 @@ MAP_CMD_NO = {'/name': CMD_NAME, '/n': CMD_NAME,
               '/quit': CMD_QUIT, '/q': CMD_QUIT}
 
 
-def pack(toUser, fromUser, endFlag, dataType, dataOrig):
-        fomart = '>IIIII%ss' % len(dataOrig)
-        streamString = struct.pack(fomart, toUser, fromUser, endFlag,
-                                   dataType, len(dataOrig), dataOrig)
-        return streamString
+def pack(to_user, from_user, end_flag, data_type, data_orig):
+        fomart = '>IIIII%ss' % len(data_orig)
+        stream_string = struct.pack(fomart, to_user, from_user, end_flag,
+                                   data_type, len(data_orig), data_orig)
+        return stream_string
 
 
-def unpack(streamString):
+def unpack(stream_string):
         fomart = '>IIIII'
-        headLength = struct.calcsize(fomart)
-        toUser, fromUser, endFlag, dataType, dataLength = struct.unpack(fomart, streamString[:headLength])
-        data, = struct.unpack('>%ss' % dataLength,
-                              streamString[headLength:headLength + dataLength])
-        return toUser, fromUser, endFlag, dataType, dataLength, data
+        head_length = struct.calcsize(fomart)
+        to_user, from_user, end_flag, data_type, data_length = struct.unpack(fomart, stream_string[:head_length])
+        data, = struct.unpack('>%ss' % data_length,
+                              stream_string[head_length:head_length + data_length])
+        return to_user, from_user, end_flag, data_type, data_length, data
 
 
 def recv(socket):
     msg = ''
     while True:
-        streamData = socket.recv(PROTOCOL_MAX_SIZE)
-#       print str(streamData)
-        toUser, fromUser, endFlag, dataType, dataLength, data = unpack(streamData)
+        stream_data = socket.recv(PROTOCOL_MAX_SIZE)
+#       print str(stream_data)
+        to_user, from_user, end_flag, data_type, data_length, data = unpack(stream_data)
         msg = msg + data
-        if endFlag == FLAG_ENDOFDATA:
-            return toUser, fromUser, dataType, msg
+        if end_flag == FLAG_ENDOFDATA:
+            return to_user, from_user, data_type, msg
         elif len(msg) >= ONE_DATA_MAX_SIZE:
             return None, None, None, None
 
 
-def send(socket, toUser, fromUser, dataType, data):
+def send(socket, to_user, from_user, data_type, data):
     sg = True
     end = not FLAG_ENDOFDATA
     while sg:
         if len(data) < DATA_MAX_LEN:
             end = FLAG_ENDOFDATA
         dt = data[:DATA_MAX_LEN]
-        stream = pack(toUser, fromUser, end, dataType, dt)
+        stream = pack(to_user, from_user, end, data_type, dt)
         socket.send(stream)
         if len(data) >= DATA_MAX_LEN:
             data = data[DATA_MAX_LEN:]

@@ -11,36 +11,36 @@ import time
 import os
 
 
-class QQServer(object):
-    def __init__(self, hostName, port, fileName):
+class qqserver(object):
+    def __init__(self, hostname, port, file_name):
         """
         users = { id : info }
         info = {'name':str, 'pwd':str, 'isOnline':Bool, \
-                'socket':clientSocket, 'addr':clientAddr, 'friends':set([])}
+                'socket':client_socket, 'addr':client_addr, 'friends':set([])}
         """
-        self.__users = self.__initUsers(fileName)
-        self.fileName = fileName
-        self.__serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.__serverSocket.bind((hostName, port))
-        self.__serverSocket.listen(pt.LISTEN_MAX)
+        self.__users = self.__init_users(file_name)
+        self.file_name = file_name
+        self.__server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__server_socket.bind((hostname, port))
+        self.__server_socket.listen(pt.LISTEN_MAX)
         print 'Waiting for connection ....'
 
-    def __initUsers(self, fileName):
+    def __init_users(self, file_name):
         users = {}
-        if os.path.isfile(fileName) == False:
+        if os.path.isfile(file_name) == False:
             return {}
-        file = open(fileName)
+        file = open(file_name)
         # read from file
         for line in file:
             info = {}
             friends = set([])
             print line.strip()
-            userList = line.strip().split(' ')
-            if len(userList) < 1:
+            userlist = line.strip().split(' ')
+            if len(userlist) < 1:
                 continue
             try:
-                userId = int(userList[0])
-                for infoNo in userList[1:]:
+                user_id = int(userlist[0])
+                for infoNo in userlist[1:]:
                     ls = infoNo.split(':')
                     key = int(ls[0])
                     val = ls[1]
@@ -52,18 +52,18 @@ class QQServer(object):
                 info[pt.USER_SOCKET] = None
                 info[pt.USER_ADDR] = None
                 info[pt.USER_FRIENDS] = friends
-                users[userId] = info
+                users[user_id] = info
             except:
                 file.close()
                 return {}
         file.close()
         return users
 
-    def saveUsers(self, fileName):
+    def save_users(self, file_name):
         data = []
         split = ':'
         space = ' '
-        for id, info in self.getUsers().items():
+        for id, info in self.get_users().items():
             idtxt = str(id)
             friends = info[pt.USER_FRIENDS]
             fdtxt = ''
@@ -76,239 +76,239 @@ class QQServer(object):
                     pwdtxt + space +
                     fdtxt + '\n')
             data.append(line)
-        file = open(fileName, 'w')
+        file = open(file_name, 'w')
         file.writelines(data)
         file.close()
 
-    def getUsers(self):
+    def get_users(self):
         return self.__users
 
-    def getUserName(self, userId):
-        if userId in self.getUsers():
-            return self.getUsers()[userId][pt.USER_NAME]
+    def get_user_name(self, user_id):
+        if user_id in self.get_users():
+            return self.get_users()[user_id][pt.USER_NAME]
 
-    def getUserId(self, userName):
-        for id, info in self.getUsers().items():
-            if info[pt.USER_NAME] == userName:
+    def get_user_id(self, user_name):
+        for id, info in self.get_users().items():
+            if info[pt.USER_NAME] == user_name:
                 return id
 
-    def getUserPwd(self, userId):
-        if userId in self.getUsers():
-            return self.getUsers()[userId][pt.USER_PWD]
+    def get_user_pwd(self, user_id):
+        if user_id in self.get_users():
+            return self.get_users()[user_id][pt.USER_PWD]
 
-    def isUserOnline(self, userId):
-        if userId in self.getUsers():
-            return self.getUsers()[userId][pt.USER_ISONLINE]
+    def isuseronline(self, user_id):
+        if user_id in self.get_users():
+            return self.get_users()[user_id][pt.USER_ISONLINE]
 
-    def getUserSocket(self, userId):
-        if userId in self.getUsers():
-            return self.getUsers()[userId][pt.USER_SOCKET]
+    def get_user_socket(self, user_id):
+        if user_id in self.get_users():
+            return self.get_users()[user_id][pt.USER_SOCKET]
 
-    def getUserAddr(self, userId):
-        if userId in self.getUsers():
-            return self.getUsers()[userId][pt.USER_ADDR]
+    def get_user_addr(self, user_id):
+        if user_id in self.get_users():
+            return self.get_users()[user_id][pt.USER_ADDR]
 
-    def getFriends(self, userId):
-        if userId in self.getUsers():
-            return self.getUsers()[userId][pt.USER_FRIENDS]
+    def get_user_friends(self, user_id):
+        if user_id in self.get_users():
+            return self.get_users()[user_id][pt.USER_FRIENDS]
 
-    def getUsersOnline(self):
+    def get_usersonline(self):
         onlines = {}
-        for id, info in self.getUsers().items():
+        for id, info in self.get_users().items():
             if info[pt.USER_ISONLINE] == pt.FLAG_ONLINE:
                 onlines[id] = info
         return onlines
 
-    def setUserName(self, userId, newName):
-        if userId in self.getUsers():
-            oldName = self.__users[userId][pt.USER_NAME]
-            self.__users[userId][pt.USER_NAME] = newName
-            self.saveUsers(self.fileName)
-            return oldName
+    def set_user_name(self, user_id, new_name):
+        if user_id in self.get_users():
+            oldname = self.__users[user_id][pt.USER_NAME]
+            self.__users[user_id][pt.USER_NAME] = new_name
+            self.save_users(self.file_name)
+            return oldname
 
-    def modifyPwd(self, userId, oldPwd, newPwd):
-        if userId in self.getUsers():
-            if oldPwd == self.__users[userId][pt.USER_PWD]:
-                self.__users[userId][pt.USER_PWD] = newPwd
-                self.saveUsers(self.fileName)
-                return oldPwd
+    def modify_pwd(self, user_id, old_pwd, new_pwd):
+        if user_id in self.get_users():
+            if old_pwd == self.__users[user_id][pt.USER_PWD]:
+                self.__users[user_id][pt.USER_PWD] = new_pwd
+                self.save_users(self.file_name)
+                return old_pwd
 
-    def setUserOnlineFlag(self, userId, flag):
-        if userId in self.getUsers():
-            oldFlag = self.__users[userId][pt.USER_ISONLINE]
-            self.__users[userId][pt.USER_ISONLINE] = flag
-            return oldFlag
+    def set_useronline_flag(self, user_id, flag):
+        if user_id in self.get_users():
+            old_flag = self.__users[user_id][pt.USER_ISONLINE]
+            self.__users[user_id][pt.USER_ISONLINE] = flag
+            return old_flag
 
-    def setUserSocket(self, userId, newSocket):
-        if userId in self.getUsers():
-            oldSocket = self.__users[userId][pt.USER_SOCKET]
-            self.__users[userId][pt.USER_SOCKET] = newSocket
-            return oldSocket
+    def set_user_socket(self, user_id, new_socket):
+        if user_id in self.get_users():
+            old_socket = self.__users[user_id][pt.USER_SOCKET]
+            self.__users[user_id][pt.USER_SOCKET] = new_socket
+            return old_socket
 
-    def setUserAddr(self, userId, newAddr):
-        if userId in self.getUsers():
-            oldAddr = self.__users[userId][pt.USER_ADDR]
-            self.__users[userId][pt.USER_ADDR] = newAddr
-            return oldAddr
+    def set_user_addr(self, user_id, new_addr):
+        if user_id in self.get_users():
+            old_addr = self.__users[user_id][pt.USER_ADDR]
+            self.__users[user_id][pt.USER_ADDR] = new_addr
+            return old_addr
 
-    def addFriends(self, userId, addFrdId):
-        if userId in self.getUsers():
-            self.__users[userId][pt.USER_FRIENDS].add(addFrdId)
-            self.saveUsers(self.fileName)
+    def add_friend(self, user_id, frd_id):
+        if user_id in self.get_users():
+            self.__users[user_id][pt.USER_FRIENDS].add(frd_id)
+            self.save_users(self.file_name)
             return True
         else:
             return False
 
-    def delFriends(self, userId, delFrdId):
-        if userId in self.getUsers():
-            self.__users[userId][pt.USER_FRIENDS].remove(delFrdId)
-            self.saveUsers(self.fileName)
+    def del_friend(self, user_id, frd_id):
+        if user_id in self.get_users():
+            self.__users[user_id][pt.USER_FRIENDS].remove(frd_id)
+            self.save_users(self.file_name)
             return True
         else:
             return False
 
-    def register(self, clientSocket, clientAddr, userId):
-        text = 'You have to register first ! Are you Register ?(y/n):'  # Please input your : userId(integer must) userName userPwd :\n'
-        pt.send(clientSocket, userId, pt.SERV_USER, pt.MSG_REGISTER, text)
+    def register(self, client_socket, client_addr, user_id):
+        text = 'You have to register first ! Are you Register ?(y/n):'  # Please input your : user_id(integer must) user_name user_pwd :\n'
+        pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_REGISTER, text)
         while True:
-            toUser, fromUser, dataType, data = pt.recv(clientSocket)
+            to_user, from_user, data_type, data = pt.recv(client_socket)
             if data.strip() != '':
                 break
-        if dataType != pt.MSG_REGISTER:
+        if data_type != pt.MSG_REGISTER:
             return None
         elif data != 'y' and data !='yes':
             return None
         else:
-            text = 'Please input your : userId(must Integer) userName userPwd \n'
+            text = 'Please input your : user_id(must Integer) user_name user_pwd \n'
             print text
-            pt.send(clientSocket, fromUser, pt.SERV_USER, pt.MSG_REGISTER, text)
-            toUser, fromUser, dataType, data = pt.recv(clientSocket)
+            pt.send(client_socket, from_user, pt.SERV_USER, pt.MSG_REGISTER, text)
+            to_user, from_user, data_type, data = pt.recv(client_socket)
             dtlist = data.strip().split(' ')
             text = 'Input is Wrong !'
             if len(dtlist) != 3:
-                pt.send(clientSocket, fromUser, pt.SERV_USER, pt.MSG_ERROR, text)
+                pt.send(client_socket, from_user, pt.SERV_USER, pt.MSG_ERROR, text)
                 return None
             else:
-                userId = 0
+                user_id = 0
                 try:
-                    userId = int(dtlist[0])
-                    userName = dtlist[1]
-                    userPwd = dtlist[2]
+                    user_id = int(dtlist[0])
+                    user_name = dtlist[1]
+                    user_pwd = dtlist[2]
                 except:
                     text = 'UserId is Wrong !'
-                    pt.send(clientSocket, fromUser, pt.SERV_USER, pt.MSG_ERROR, text)
+                    pt.send(client_socket, from_user, pt.SERV_USER, pt.MSG_ERROR, text)
                     return None
 
-                if userId in self.getUsers():
+                if user_id in self.get_users():
                     text = 'UserId exist !'
-                    pt.send(clientSocket, fromUser, pt.SERV_USER, pt.MSG_ERROR, text)
+                    pt.send(client_socket, from_user, pt.SERV_USER, pt.MSG_ERROR, text)
                     return None
-                if self.getUserId(userName)is not None:
+                if self.get_user_id(user_name)is not None:
                     text = 'UserName exist !'
-                    pt.send(clientSocket, fromUser, pt.SERV_USER, pt.MSG_ERROR, text)
+                    pt.send(client_socket, from_user, pt.SERV_USER, pt.MSG_ERROR, text)
                     return None
-                if self.registerUser(userId, userName, userPwd, clientSocket, clientAddr) == True:
-                    text = '[from server] {0}:{1} Register OK ! PassWord : {2}'.format(userId, userName, userPwd)
-                    pt.send(clientSocket, userId, pt.SERV_USER, pt.MSG_LOGON, text)
-                    self.saveUsers(self.fileName)
-                    return userId
+                if self.register_user(user_id, user_name, user_pwd, client_socket, client_addr) == True:
+                    text = '[from server] {0}:{1} Register OK ! PassWord : {2}'.format(user_id, user_name, user_pwd)
+                    pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_LOGON, text)
+                    self.save_users(self.file_name)
+                    return user_id
                 else:
                     text = 'Register  Wrong!'
-                    pt.send(clientSocket, fromUser, pt.SERV_USER, pt.MSG_ERROR, text)
+                    pt.send(client_socket, from_user, pt.SERV_USER, pt.MSG_ERROR, text)
 
-    def registerUser(self, userId, userName, userPwd, clientSocket, clientAddr):
-        if userId in self.getUsers():
+    def register_user(self, user_id, user_name, user_pwd, client_socket, client_addr):
+        if user_id in self.get_users():
             return False
         try:
             info = {}
-            info[pt.USER_NAME] = userName
-            info[pt.USER_PWD] = userPwd
+            info[pt.USER_NAME] = user_name
+            info[pt.USER_PWD] = user_pwd
             info[pt.USER_ISONLINE] = pt.FLAG_ONLINE
-            info[pt.USER_SOCKET] = clientSocket
-            info[pt.USER_ADDR] = clientAddr
+            info[pt.USER_SOCKET] = client_socket
+            info[pt.USER_ADDR] = client_addr
             friends = set([])
             info[pt.USER_FRIENDS] = friends
 
-            self.__users[userId] = info
-            print 'RegisterUser: [{0}:{1}] '.format(userId, userName)
+            self.__users[user_id] = info
+            print 'RegisterUser: [{0}:{1}] '.format(user_id, user_name)
             return True
         except:
             return False
 
-    def logon(self, userId, userPwd, clientSocket, clientAddr):
-        if userId not in self.getUsers():
+    def logon(self, user_id, user_pwd, client_socket, client_addr):
+        if user_id not in self.get_users():
             return None
-        if userPwd != self.getUserPwd(userId):
+        if user_pwd != self.get_user_pwd(user_id):
             text = 'PassWord is Wrong !'
-            pt.send(clientSocket, userId, pt.SERV_USER, pt.MSG_ERROR, text)
+            pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_ERROR, text)
             return False
         else:
-            self.setUserOnlineFlag(userId, pt.FLAG_ONLINE)
-            self.setUserSocket(userId, clientSocket)
-            self.setUserAddr(userId, clientAddr)
+            self.set_useronline_flag(user_id, pt.FLAG_ONLINE)
+            self.set_user_socket(user_id, client_socket)
+            self.set_user_addr(user_id, client_addr)
             return True
 
     def run(self):
         try:
             while True:
-                clientSocket, clientAddr = self.__serverSocket.accept()
-                thread = threading.Thread(target=self.clientLink, args=(clientSocket, clientAddr))
+                client_socket, client_addr = self.__server_socket.accept()
+                thread = threading.Thread(target=self.clientLink, args=(client_socket, client_addr))
                 thread.start()
         finally:
-            self.saveUsers(self.fileName)
+            self.save_users(self.file_name)
 
-    def clientLink(self, clientSocket, clientAddr):
-        print 'Accept new connection from %s:%s....' % clientAddr
+    def clientLink(self, client_socket, client_addr):
+        print 'Accept new connection from %s:%s....' % client_addr
         time.sleep(1)
-        toUser, fromUser, dataType, data =pt.recv(clientSocket)
-        userId = fromUser
-        userPwd = data
-        userSever = '0:server'
-        if toUser != pt.SERV_USER or dataType != pt.MSG_LOGON or data is None or not data:
+        to_user, from_user, data_type, data =pt.recv(client_socket)
+        user_id = from_user
+        user_pwd = data
+        user_sever = '0:server'
+        if to_user != pt.SERV_USER or data_type != pt.MSG_LOGON or data is None or not data:
             text = 'Logon Error !'
             print text
         else:
-            sg = self.logon(userId, userPwd, clientSocket, clientAddr)
+            sg = self.logon(user_id, user_pwd, client_socket, client_addr)
             if sg is None:
-                userId = self.register(clientSocket, clientAddr, userId)
-                if userId is not None:
-                    self.setUserOnlineFlag(userId, not pt.FLAG_ONLINE)
+                user_id = self.register(client_socket, client_addr, user_id)
+                if user_id is not None:
+                    self.set_useronline_flag(user_id, not pt.FLAG_ONLINE)
                 return
             elif sg is False:
                 return
-            user = '{0}:{1}'.format(userId, self.getUserName(userId))  # %userId   self.getUserName(userId)
-            sendText = '[{0}] Welcome {1}'.format(userSever, user)
-            pt.send(clientSocket, userId, pt.SERV_USER, pt.MSG_LOGON, sendText)
-            print sendText
+            user = '{0}:{1}'.format(user_id, self.get_user_name(user_id))  # %user_id   self.get_user_name(user_id)
+            send_text = '[{0}] Welcome {1}'.format(user_sever, user)
+            pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_LOGON, send_text)
+            print send_text
             while True:
-                toUser, fromUser, msgType, msg = pt.recv(clientSocket)
-                fuser = '{0}:{1}'.format(fromUser, self.getUserName(fromUser))
-                # no the toUser
-                if toUser != pt.SERV_USER and toUser not in self.getUsers():
-                    erroString = '[from {0} to {1} ] {2} not regist !'.format(userSever, fuser, toUser)
-                    pt.send(clientSocket, fromUser, pt.SERV_USER, pt.MSG_TEXT, erroString)
-                    print erroString
+                to_user, from_user, msg_type, msg = pt.recv(client_socket)
+                fuser = '{0}:{1}'.format(from_user, self.get_user_name(from_user))
+                # no the to_user
+                if to_user != pt.SERV_USER and to_user not in self.get_users():
+                    erro_string = '[from {0} to {1} ] {2} not regist !'.format(user_sever, fuser, to_user)
+                    pt.send(client_socket, from_user, pt.SERV_USER, pt.MSG_TEXT, erro_string)
+                    print erro_string
                 # to the server ,should cmd
-                elif toUser == pt.SERV_USER:
-                    # print 'cmd ---->  toUser == {0}, fromUser == {1}, msgType == {2}, msg == {3} '.format(toUser,fromUser, msgType, msg)
-                    sg = self.processCmd(fromUser, msg)
+                elif to_user == pt.SERV_USER:
+                    # print 'cmd ---->  to_user == {0}, from_user == {1}, msg_type == {2}, msg == {3} '.format(to_user,from_user, msg_type, msg)
+                    sg = self.process_cmd(from_user, msg)
                     if sg == pt.MSG_QUIT:
                         break
                     elif sg == pt.MSG_ERROR:
-                        erroString = '[from {0} to {1}] {2} : {3}'.format(userSever, fuser, msg, 'Wrong Cmd to Server !')
-                        pt.send(clientSocket, fromUser, pt.SERV_USER, pt.MSG_ERROR, erroString)
-                        print erroString
+                        erro_string = '[from {0} to {1}] {2} : {3}'.format(user_sever, fuser, msg, 'Wrong Cmd to Server !')
+                        pt.send(client_socket, from_user, pt.SERV_USER, pt.MSG_ERROR, erro_string)
+                        print erro_string
                 # to other client
                 else:
-                    # print 'chat --->  toUser == {0}, fromUser == {1}, msgType == {2}, msg == {3} '.format(toUser,fromUser, msgType, msg)
-                    sg = self.processChat(fromUser, toUser, msg)
+                    # print 'chat --->  to_user == {0}, from_user == {1}, msg_type == {2}, msg == {3} '.format(to_user,from_user, msg_type, msg)
+                    sg = self.process_chat(from_user, to_user, msg)
                     if sg == pt.MSG_ERROR:
-                        erroString = '[from {0} to {1}] {2} not online !'.format(userSever, fuser, toUser)
-        clientSocket.close()
+                        erro_string = '[from {0} to {1}] {2} not online !'.format(user_sever, fuser, to_user)
+        client_socket.close()
 
-    def processCmd(self, userId, msg):
-        clientSocket = self.getUserSocket(userId)
-        if clientSocket is None:
+    def process_cmd(self, user_id, msg):
+        client_socket = self.get_user_socket(user_id)
+        if client_socket is None:
             return pt.MSG_ERROR
         if not msg:
             return pt.MSG_ERROR
@@ -317,30 +317,30 @@ class QQServer(object):
             return pt.MSG_ERROR
         cmdno = res[0]
         args = res[1]
-        argss = [userId, clientSocket]
+        argss = [user_id, client_socket]
 
         text = pt.MAP_CMD_NO.keys()[pt.MAP_CMD_NO.values().index(cmdno)]
         for ag in args:
             argss.append(ag)
             text = text + "  " + ag
-        print '{0}:{1} | {2}'.format(userId, self.getUserName(userId), text)
+        print '{0}:{1} | {2}'.format(user_id, self.get_user_name(user_id), text)
 
         return scmap.MAP_CMD_FUN[cmdno](self, argss)
 
-    def processChat(self, fromUser, toUser, msg):
-        # print toUser ,';' ,self.getUserName(toUser)
-        toSocket = self.getUserSocket(toUser)
+    def process_chat(self, from_user, to_user, msg):
+        # print to_user ,';' ,self.get_user_name(to_user)
+        toSocket = self.get_user_socket(to_user)
         if toSocket is None:
             return pt.MSG_ERROR
-        text = '[{0}:{1}] {2}'.format(fromUser, self.getUserName(fromUser), msg)
+        text = '[{0}:{1}] {2}'.format(from_user, self.get_user_name(from_user), msg)
         print text
-        pt.send(toSocket, toUser, fromUser, pt.MSG_TEXT, text)
+        pt.send(toSocket, to_user, from_user, pt.MSG_TEXT, text)
 
 if __name__ == '__main__':
     import server_cmd_map
     pt = protocol
     sc = server_cmd
     scmap = server_cmd_map
-    fileName = 'users.dat'
-    qqServer = QQServer('127.0.0.1', 18889, fileName)
-    qqServer.run()
+    file_name = 'users.dat'
+    qq_server = qqserver('127.0.0.1', 18889, file_name)
+    qq_server.run()
