@@ -68,7 +68,7 @@ MAP_CMD_NO = {'/name': CMD_NAME, '/n': CMD_NAME,
 def pack(to_user, from_user, end_flag, data_type, data_orig):
         fomart = '>IIIII%ss' % len(data_orig)
         stream_string = struct.pack(fomart, to_user, from_user, end_flag,
-                                   data_type, len(data_orig), data_orig)
+                                    data_type, len(data_orig), data_orig)
         return stream_string
 
 

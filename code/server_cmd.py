@@ -8,19 +8,19 @@ pt = protocol
 
 
 def cmd_name(serv, args):
-    print " cmd _ name()"
+    # print " cmd _ name()"
     user_id = args[0]
     client_socket = args[1]
 
     names = serv.get_users()
     text = ''
     for id, info in names.items():
-        text = text + str(id) +':'+ serv.get_user_name(id)+ '\n'
+        text = text + str(id) + ':' + serv.get_user_name(id) + '\n'
     pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_TEXT, text)
 
 
 def cmd_online(serv, args):
-    print " cmd_online"
+    # print " cmd_online"
     user_id = args[0]
     client_socket = args[1]
 
@@ -32,7 +32,7 @@ def cmd_online(serv, args):
 
 
 def cmd_rename(serv, args):
-    print "cmd_rename()"
+    # print "cmd_rename()"
     if len(args) < 2:
         return pt.MSG_ERROR
     user_id = args[0]
@@ -50,7 +50,7 @@ def cmd_rename(serv, args):
 
 
 def cmd_mdpwd(serv, args):
-    print " cmd_mdpwd"
+    # print " cmd_mdpwd"
     user_id = args[0]
     client_socket = args[1]
 
@@ -60,14 +60,17 @@ def cmd_mdpwd(serv, args):
     input_newpwd = args[3]
     old_pwd = serv.get_user_pwd(user_id)
     if serv.modify_pwd(user_id, input_oldpwd, input_newpwd) == True:
-        text = '[{0}:{1}] old PassWord is : {2}, Now is {3}'.format(user_id, serv.get_user_name(user_id), old_pwd, cmd[1])
+        text = '[{0}:{1}] old PassWord is : {2}, Now is {3}'.format(user_id,
+                                                                    serv.get_user_name(user_id),
+                                                                    old_pwd,
+                                                                    input_newpwd)
         pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_TEXT, text)
     else:
         return pt.MSG_ERROR
 
 
 def cmd_friends(serv, args):
-    print "cmd_friends"
+    # print "cmd_friends"
     user_id = args[0]
     client_socket = args[1]
 
@@ -81,8 +84,9 @@ def cmd_friends(serv, args):
         text = text + ol + str(uid) + ':' + serv.get_user_name(uid) + '\n'
     pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_TEXT, text)
 
+
 def cmd_add_friend(serv, args):
-    print "cmd_add_friend"
+    # print "cmd_add_friend"
     user_id = args[0]
     client_socket = args[1]
 
@@ -99,8 +103,9 @@ def cmd_add_friend(serv, args):
     except:
         return pt.MSG_ERROR
 
+
 def cmd_del_friend(serv, args):
-    print "cmd_del_friend"
+    # print "cmd_del_friend"
     user_id = args[0]
     client_socket = args[1]
 
@@ -112,13 +117,15 @@ def cmd_del_friend(serv, args):
             text = '[{0}:{1}] is not your friend ! Can\'t delete !'.format(fdId, serv.get_user_name(fdId))
             pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_ERROR, text)
         else:
-            text = '[{0}:{1}] delete from your friends ! Now he/she is not your friend !'.format(fdId, serv.get_user_name(fdId))
+            text = '[{0}:{1}] delete from your friends !'.format(fdId, serv.get_user_name(fdId))
+            text = text + ' Now he/she is not your friend !'
             pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_TEXT, text)
     except:
         return pt.MSG_ERROR
 
+
 def cmd_chat(serv, args):
-    print "cmd_chat"
+    # print "cmd_chat"
     user_id = args[0]
     client_socket = args[1]
 
@@ -144,8 +151,9 @@ def cmd_chat(serv, args):
         text = 'You are chating with:  [{0}:{1}]'.format(chatWithUserId, fdName)
     pt.send(client_socket, chatWithUserId, pt.SERV_USER, pt.MSG_CMD, text)
 
+
 def cmd_quit(serv, args):
-    print "cmd_quit"
+    # print "cmd_quit"
     user_id = args[0]
     client_socket = args[1]
     serv.set_useronline_flag(user_id, not pt.FLAG_ONLINE)

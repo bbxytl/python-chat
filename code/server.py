@@ -168,7 +168,7 @@ class qqserver(object):
             return False
 
     def register(self, client_socket, client_addr, user_id):
-        text = 'You have to register first ! Are you Register ?(y/n):'  # Please input your : user_id(integer must) user_name user_pwd :\n'
+        text = 'You have to register first ! Are you Register ?(y/n):'
         pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_REGISTER, text)
         while True:
             to_user, from_user, data_type, data = pt.recv(client_socket)
@@ -176,7 +176,7 @@ class qqserver(object):
                 break
         if data_type != pt.MSG_REGISTER:
             return None
-        elif data != 'y' and data !='yes':
+        elif data != 'y' and data != 'yes':
             return None
         else:
             text = 'Please input your : user_id(must Integer) user_name user_pwd \n'
@@ -208,7 +208,9 @@ class qqserver(object):
                     pt.send(client_socket, from_user, pt.SERV_USER, pt.MSG_ERROR, text)
                     return None
                 if self.register_user(user_id, user_name, user_pwd, client_socket, client_addr) == True:
-                    text = '[from server] {0}:{1} Register OK ! PassWord : {2}'.format(user_id, user_name, user_pwd)
+                    text = '[from server] {0}:{1} Register OK ! PassWord : {2}'.format(user_id,
+                                                                                       user_name,
+                                                                                       user_pwd)
                     pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_LOGON, text)
                     self.save_users(self.file_name)
                     return user_id
@@ -260,7 +262,7 @@ class qqserver(object):
     def clientLink(self, client_socket, client_addr):
         print 'Accept new connection from %s:%s....' % client_addr
         time.sleep(1)
-        to_user, from_user, data_type, data =pt.recv(client_socket)
+        to_user, from_user, data_type, data = pt.recv(client_socket)
         user_id = from_user
         user_pwd = data
         user_sever = '0:server'
@@ -290,20 +292,23 @@ class qqserver(object):
                     print erro_string
                 # to the server ,should cmd
                 elif to_user == pt.SERV_USER:
-                    # print 'cmd ---->  to_user == {0}, from_user == {1}, msg_type == {2}, msg == {3} '.format(to_user,from_user, msg_type, msg)
                     sg = self.process_cmd(from_user, msg)
                     if sg == pt.MSG_QUIT:
                         break
                     elif sg == pt.MSG_ERROR:
-                        erro_string = '[from {0} to {1}] {2} : {3}'.format(user_sever, fuser, msg, 'Wrong Cmd to Server !')
+                        erro_string = '[from {0} to {1}] {2} : {3}'.format(user_sever,
+                                                                           fuser,
+                                                                           msg,
+                                                                           'Wrong Cmd to Server !')
                         pt.send(client_socket, from_user, pt.SERV_USER, pt.MSG_ERROR, erro_string)
                         print erro_string
                 # to other client
                 else:
-                    # print 'chat --->  to_user == {0}, from_user == {1}, msg_type == {2}, msg == {3} '.format(to_user,from_user, msg_type, msg)
                     sg = self.process_chat(from_user, to_user, msg)
                     if sg == pt.MSG_ERROR:
-                        erro_string = '[from {0} to {1}] {2} not online !'.format(user_sever, fuser, to_user)
+                        erro_string = '[from {0} to {1}] {2} not online !'.format(user_sever,
+                                                                                  fuser,
+                                                                                  to_user)
         client_socket.close()
 
     def process_cmd(self, user_id, msg):
@@ -323,7 +328,9 @@ class qqserver(object):
         for ag in args:
             argss.append(ag)
             text = text + "  " + ag
-        print '{0}:{1} | {2}'.format(user_id, self.get_user_name(user_id), text)
+        print '{0}:{1} | {2}'.format(user_id,
+                                     self.get_user_name(user_id),
+                                     text)
 
         return scmap.MAP_CMD_FUN[cmdno](self, argss)
 
@@ -332,7 +339,9 @@ class qqserver(object):
         toSocket = self.get_user_socket(to_user)
         if toSocket is None:
             return pt.MSG_ERROR
-        text = '[{0}:{1}] {2}'.format(from_user, self.get_user_name(from_user), msg)
+        text = '[{0}:{1}] {2}'.format(from_user,
+                                      self.get_user_name(from_user),
+                                      msg)
         print text
         pt.send(toSocket, to_user, from_user, pt.MSG_TEXT, text)
 

@@ -9,6 +9,7 @@ from threading import Thread
 
 pt = protocol
 
+
 class qqclient(object):
     def __init__(self, hostname, port):
         self.user_id = 1000
@@ -41,7 +42,8 @@ class qqclient(object):
         return oldname
 
     def logon(self, user_id, user_pwd):
-        pt.send(self.client_socket, pt.SERV_USER, user_id, pt.MSG_LOGON, user_pwd)
+        pt.send(self.client_socket, pt.SERV_USER,
+                user_id, pt.MSG_LOGON, user_pwd)
         to_user, from_user, msg_type, msg = pt.recv(self.client_socket)
         print msg
         if msg_type == pt.MSG_LOGON:
@@ -51,7 +53,8 @@ class qqclient(object):
         elif msg_type == pt.MSG_REGISTER:
             while msg_type == pt.MSG_REGISTER:
                 msg = sys.stdin.readline().strip()
-                pt.send(self.client_socket, pt.SERV_USER, user_id, pt.MSG_REGISTER, msg)
+                pt.send(self.client_socket, pt.SERV_USER,
+                        user_id, pt.MSG_REGISTER, msg)
                 to_user, from_user, msg_type, msg = pt.recv(self.client_socket)
                 print msg
                 if msg_type == pt.MSG_LOGON:
@@ -105,14 +108,15 @@ class processstdin(Thread):
         while not self.done:
             data = raw_input()
             data_type = pt.MSG_TEXT
-            if len(data)>0 and data[0] == '/':
+            if len(data) > 0 and data[0] == '/':
                 data_type = pt.MSG_CMD
                 client.curchatuser = pt.SERV_USER
-            pt.send(self.client_socket, client.curchatuser, client.user_id, data_type, data)
+            pt.send(self.client_socket, client.curchatuser,
+                    client.user_id, data_type, data)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) !=3:
+    if len(sys.argv) != 3:
         print u'Wrong Argvs : user_id(integer), user_pwd '
     else:
         hostname = '127.0.0.1'
@@ -120,9 +124,10 @@ if __name__ == '__main__':
         qq_client = qqclient(hostname, port)
         user_id = 0
         try:
-            user_id =int(sys.argv[1])
+            user_id = int(sys.argv[1])
             user_pwd = sys.argv[2]
             qq_client.run(user_id, user_pwd)
         except ValueError, e:
-            pt.send(qq_client.client_socket, pt.SERV_USER, qq_client.user_id, pt.MSG_QUIT, '')
+            pt.send(qq_client.client_socket, pt.SERV_USER,
+                    qq_client.user_id, pt.MSG_QUIT, '')
             print u'Wrong user_id(integer)!\nValueError: ', e
