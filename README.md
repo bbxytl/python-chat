@@ -29,7 +29,7 @@ python client.py 11 123456
 - `/friends` :  `*` 当前用户的好友列表
 - `/addfriend [userId]`:  `*` 添加好友
 - `/delfriend [userId]`:  `*` 删除好友
-- `/updateuser [fileName]`	: 更新用户数据文件,fileName 为可选项，如果有，则表示将目前的用户数据先存档到 fileName ,在从原来的数据文件载入数据
+- `/updateuser [fileName]`	: 更新用户数据文件,fileName 为可选项，如果有，则表示将目前的用户数据先存档到 fileName ,在从原来的数据文件载入数据，主要用于直接手动更改 users.dat 后加载，否则手动更改会无效。
 - `/getcmds` ：  `*` 获取当前用户所支持的所有命令列表 `全命令名 | 命令别名 ： 命令编号`，服务器拥有全部命令
 - `/addcmd [userId] [newCmdNo]` ： 给用户添加命令，使用命令编号
 - `/delcmd [userId] [cmdNo]` : 取消某用户的命令权限，使用命令编号 
