@@ -4,8 +4,8 @@
 
 import socket
 import threading
-# import struct
-import server_cmd as sc
+from threading import Thread
+# import server_cmd as sc
 import protocol as pt
 import time
 import os
@@ -15,17 +15,18 @@ class qqserver(object):
     def __init__(self, hostname, port, file_name):
         """
         users = { id : info }
-        info = {'name':str, 'pwd':str, 'isOnline':Bool, \
+        info = {'name':str, 'pwd':str, 'cmd':set([]), 'isOnline':Bool, \
                 'socket':client_socket, 'addr':client_addr, 'friends':set([])}
         """
-        self.__users = self.__init_users(file_name)
-        self.file_name = file_name
+        self.__users = self.init_users(file_name)
+        self.__file_name = file_name
+        self.__done = False
         self.__server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__server_socket.bind((hostname, port))
         self.__server_socket.listen(pt.LISTEN_MAX)
         print 'Waiting for connection ....'
 
-    def __init_users(self, file_name):
+    def init_users(self, file_name):
         users = {}
         if os.path.isfile(file_name) == False:
             return {}
@@ -33,6 +34,7 @@ class qqserver(object):
         # read from file
         for line in file:
             info = {}
+            cmds = set([])
             friends = set([])
             print line.strip()
             userlist = line.strip().split(' ')
@@ -44,10 +46,13 @@ class qqserver(object):
                     ls = infoNo.split(':')
                     key = int(ls[0])
                     val = ls[1]
-                    if key != pt.USER_FRIENDS:
-                        info[key] = val
-                    else:
+                    if key == pt.USER_CMD:
+                        cmds.add(int(val))
+                    elif key == pt.USER_FRIENDS:
                         friends.add(val)
+                    else:
+                        info[key] = val
+                info[pt.USER_CMD] = cmds
                 info[pt.USER_ISONLINE] = not pt.FLAG_ONLINE
                 info[pt.USER_SOCKET] = None
                 info[pt.USER_ADDR] = None
@@ -65,20 +70,36 @@ class qqserver(object):
         space = ' '
         for id, info in self.get_users().items():
             idtxt = str(id)
+            cmds = info[pt.USER_CMD]
+            cdtxt = ''
+            for cd in cmds:
+                cdtxt = cdtxt + str(pt.USER_CMD) + split + str(cd) + space
+
             friends = info[pt.USER_FRIENDS]
             fdtxt = ''
             for fd in friends:
-                fdtxt = str(pt.USER_FRIENDS) + split + str(fd)
+                fdtxt = fdtxt + str(pt.USER_FRIENDS) + split + str(fd) + space
+
             nametxt = str(pt.USER_NAME) + split + info[pt.USER_NAME]
             pwdtxt = str(pt.USER_PWD) + split + info[pt.USER_PWD]
             line = (idtxt + space +
                     nametxt + space +
                     pwdtxt + space +
+                    cdtxt + space +
                     fdtxt + '\n')
             data.append(line)
         file = open(file_name, 'w')
         file.writelines(data)
         file.close()
+
+    def get_server_socket(self):
+        return self.__server_socket
+
+    def get_file_name(self):
+        return self.__file_name
+
+    def set_file_name(self, file_name):
+        self.__file_name = file_name
 
     def get_users(self):
         return self.__users
@@ -95,6 +116,10 @@ class qqserver(object):
     def get_user_pwd(self, user_id):
         if user_id in self.get_users():
             return self.get_users()[user_id][pt.USER_PWD]
+
+    def get_user_cmds(self, user_id):
+        if user_id in self.get_users():
+            return self.get_users()[user_id][pt.USER_CMD]
 
     def isuseronline(self, user_id):
         if user_id in self.get_users():
@@ -123,15 +148,38 @@ class qqserver(object):
         if user_id in self.get_users():
             oldname = self.__users[user_id][pt.USER_NAME]
             self.__users[user_id][pt.USER_NAME] = new_name
-            self.save_users(self.file_name)
+            self.save_users(self.__file_name)
             return oldname
 
     def modify_pwd(self, user_id, old_pwd, new_pwd):
         if user_id in self.get_users():
             if old_pwd == self.__users[user_id][pt.USER_PWD]:
                 self.__users[user_id][pt.USER_PWD] = new_pwd
-                self.save_users(self.file_name)
+                self.save_users(self.__file_name)
                 return old_pwd
+
+    def issupportcmd(self, user_id, cmdno):
+        if user_id in self.get_users():
+            if cmdno in self.get_user_cmds(user_id):
+                return True
+            else:
+                return False
+
+    def add_cmd(self, user_id, cmdno):
+        if user_id in self.get_users():
+            if cmdno in pt.CMD_SET:
+                self.__users[user_id][pt.USER_CMD].add(cmdno)
+                return True
+            else:
+                return False
+
+    def del_cmd(self, user_id, cmdno):
+        if user_id in self.get_users():
+            if cmdno in self.get_user_cmds(user_id):
+                self.__users[user_id][pt.USER_CMD].remove(cmdno)
+                return True
+            else:
+                return False
 
     def set_useronline_flag(self, user_id, flag):
         if user_id in self.get_users():
@@ -154,7 +202,7 @@ class qqserver(object):
     def add_friend(self, user_id, frd_id):
         if user_id in self.get_users():
             self.__users[user_id][pt.USER_FRIENDS].add(frd_id)
-            self.save_users(self.file_name)
+            self.save_users(self.__file_name)
             return True
         else:
             return False
@@ -162,7 +210,7 @@ class qqserver(object):
     def del_friend(self, user_id, frd_id):
         if user_id in self.get_users():
             self.__users[user_id][pt.USER_FRIENDS].remove(frd_id)
-            self.save_users(self.file_name)
+            self.save_users(self.__file_name)
             return True
         else:
             return False
@@ -177,6 +225,7 @@ class qqserver(object):
         if data_type != pt.MSG_REGISTER:
             return None
         elif data != 'y' and data != 'yes':
+            pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_ERROR, "")
             return None
         else:
             text = 'Please input your : user_id(must Integer) user_name user_pwd \n'
@@ -212,7 +261,7 @@ class qqserver(object):
                                                                                        user_name,
                                                                                        user_pwd)
                     pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_LOGON, text)
-                    self.save_users(self.file_name)
+                    self.save_users(self.__file_name)
                     return user_id
                 else:
                     text = 'Register  Wrong!'
@@ -228,6 +277,7 @@ class qqserver(object):
             info[pt.USER_ISONLINE] = pt.FLAG_ONLINE
             info[pt.USER_SOCKET] = client_socket
             info[pt.USER_ADDR] = client_addr
+            info[pt.USER_CMD] = pt.USER_CMD_NORMAL
             friends = set([])
             info[pt.USER_FRIENDS] = friends
 
@@ -250,14 +300,82 @@ class qqserver(object):
             self.set_user_addr(user_id, client_addr)
             return True
 
+    class threadservercmd(Thread):
+
+        def __init__(self, serv):
+            Thread.__init__(self)
+            self.setDaemon(True)
+            self.serv = serv
+            self.serv_socket = serv.__server_socket
+            self.done = False
+
+        def run(self):
+            serv = self.serv
+            while not self.done:
+                data = raw_input()
+                sg = serv.process_cmd(pt.SERV_USER, data)
+                if sg == pt.MSG_QUIT:
+                    serv.__done = True
+                    self.done = True
+                elif sg == pt.MSG_ERROR:
+                    print "Error Cmd !"
+
     def run(self):
         try:
-            while True:
-                client_socket, client_addr = self.__server_socket.accept()
-                thread = threading.Thread(target=self.clientLink, args=(client_socket, client_addr))
-                thread.start()
+            thread_serv = threading.Thread(target=self.server_cmd)
+            thread_serv.start()
+
+            while True and not self.__done:
+                    client_socket, client_addr = self.__server_socket.accept()
+                    thread = threading.Thread(target=self.clientLink, args=(client_socket, client_addr))
+                    thread.start()
+        except KeyboardInterrupt:
+            return
         finally:
-            self.save_users(self.file_name)
+            for uid, info in self.get_usersonline().items():
+                client_socket = self.get_user_socket(uid)
+                pt.send(client_socket, uid, pt.SERV_USER, pt.CMD_QUIT, "Server is Sign Out !")
+            self.save_users(self.__file_name)
+
+    def server_cmd(self):
+        while not self.__done:
+            try:
+                data = raw_input()
+                sg = self.process_serv_cmd(data)
+                if sg == pt.MSG_QUIT:
+                    self.__done = True
+                elif sg == pt.MSG_ERROR:
+                    print "Error Cmd !"
+            except KeyboardInterrupt, e:
+                print e
+                return
+
+    def process_serv_cmd(self, msg):
+        if not msg:
+            return pt.MSG_ERROR
+        res = pt.getcmd(msg)
+        if res is None:
+            return pt.MSG_ERROR
+        cmdno = res[0]
+        args = res[1]
+        argss = [pt.SERV_USER, self.get_server_socket()]
+        try:
+            if len(args) > 0:
+                argss = [int(args[0]), self.get_server_socket()]
+        except:
+            return pt.MSG_ERROR
+        text = pt.get_cmd_name(cmdno)
+        # text = pt.MAP_CMD_NO.keys()[pt.MAP_CMD_NO.values().index(cmdno)]
+        for ag in args[1:]:
+            argss.append(ag)
+            text = text + "  " + ag
+        text = '[{0}:{1}] | {2}'.format(pt.SERV_USER, 'server', text)
+        print text
+        if cmdno not in pt.CMD_SET:
+            text = text + "  | No this command !"
+            print text
+            return pt.MSG_ERROR
+        return scmap.MAP_CMD_FUN[cmdno](self, argss)
 
     def clientLink(self, client_socket, client_addr):
         print 'Accept new connection from %s:%s....' % client_addr
@@ -275,8 +393,12 @@ class qqserver(object):
                 user_id = self.register(client_socket, client_addr, user_id)
                 if user_id is not None:
                     self.set_useronline_flag(user_id, not pt.FLAG_ONLINE)
+                client_socket.close()
+                print 'Close connection from %s:%s....' % client_addr
                 return
             elif sg is False:
+                client_socket.close()
+                print 'Close connection from %s:%s....' % client_addr
                 return
             user = '{0}:{1}'.format(user_id, self.get_user_name(user_id))  # %user_id   self.get_user_name(user_id)
             send_text = '[{0}] Welcome {1}'.format(user_sever, user)
@@ -310,6 +432,7 @@ class qqserver(object):
                                                                                   fuser,
                                                                                   to_user)
         client_socket.close()
+        print 'Close connection from %s:%s....' % client_addr
 
     def process_cmd(self, user_id, msg):
         client_socket = self.get_user_socket(user_id)
@@ -328,14 +451,17 @@ class qqserver(object):
         for ag in args:
             argss.append(ag)
             text = text + "  " + ag
-        print '{0}:{1} | {2}'.format(user_id,
-                                     self.get_user_name(user_id),
-                                     text)
-
+        text = '{0}:{1} | {2}'.format(user_id,
+                                      self.get_user_name(user_id),
+                                      text)
+        print text
+        if self.issupportcmd(user_id, cmdno) is not True:
+            text = text + "  | no authority or no this command !"
+            pt.send(client_socket, user_id, pt.SERV_USER, pt.MSG_ERROR, text)
+            return pt.MSG_ERROR
         return scmap.MAP_CMD_FUN[cmdno](self, argss)
 
     def process_chat(self, from_user, to_user, msg):
-        # print to_user ,';' ,self.get_user_name(to_user)
         toSocket = self.get_user_socket(to_user)
         if toSocket is None:
             return pt.MSG_ERROR

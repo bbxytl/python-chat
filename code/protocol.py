@@ -38,10 +38,11 @@ FLAG_ONLINE = True
 # 用户信息
 USER_NAME = 0
 USER_PWD = 1
-USER_ISONLINE = 2
-USER_SOCKET = 3
-USER_ADDR = 4
-USER_FRIENDS = 5
+USER_CMD = 2
+USER_ISONLINE = 3
+USER_SOCKET = 4
+USER_ADDR = 5
+USER_FRIENDS = 6
 
 # 命令映射
 CMD_NAME = 0
@@ -53,7 +54,39 @@ CMD_ADD_FRIEND = 5
 CMD_DEL_FRIEND = 6
 CMD_CHAT = 7
 CMD_QUIT = 8
+CMD_UPDATE_USERS = 9
+CMD_GET_CMDS = 10
+CMD_ADD_CMD = 11
+CMD_DEL_CMD = 12
 
+# 命令集合
+CMD_SET = set([CMD_NAME,
+               CMD_ONLINE,
+               CMD_RENAME,
+               CMD_MDPWD,
+               CMD_FRIENDS,
+               CMD_ADD_FRIEND,
+               CMD_DEL_FRIEND,
+               CMD_CHAT,
+               CMD_UPDATE_USERS,
+               CMD_GET_CMDS,
+               CMD_ADD_CMD,
+               CMD_DEL_CMD,
+               CMD_QUIT])
+
+# 默认用户拥有的命令集合
+USER_CMD_NORMAL = set([CMD_NAME,
+                       CMD_ONLINE,
+                       CMD_RENAME,
+                       CMD_MDPWD,
+                       CMD_FRIENDS,
+                       CMD_ADD_FRIEND,
+                       CMD_DEL_FRIEND,
+                       CMD_CHAT,
+                       CMD_GET_CMDS,
+                       CMD_QUIT])
+
+# 命令的显式输入字符串
 MAP_CMD_NO = {'/name': CMD_NAME, '/n': CMD_NAME,
               '/online': CMD_ONLINE, '/o': CMD_ONLINE,
               '/rename': CMD_RENAME, '/r': CMD_RENAME,
@@ -62,7 +95,20 @@ MAP_CMD_NO = {'/name': CMD_NAME, '/n': CMD_NAME,
               '/addfriend': CMD_ADD_FRIEND, '/af': CMD_ADD_FRIEND,
               '/delfriend': CMD_DEL_FRIEND, '/df': CMD_DEL_FRIEND,
               '/chat': CMD_CHAT, '/c': CMD_CHAT,
+              '/updateuser': CMD_UPDATE_USERS, '/upuser': CMD_UPDATE_USERS,
+              '/getcmds': CMD_GET_CMDS, '/gc': CMD_GET_CMDS,
+              '/addcmd': CMD_ADD_CMD, '/ac': CMD_ADD_CMD,
+              '/delcmd': CMD_DEL_CMD, '/dc': CMD_DEL_CMD,
               '/quit': CMD_QUIT, '/q': CMD_QUIT}
+
+
+def get_cmd_name(cmdno):
+    lst = []
+    for key, no in MAP_CMD_NO.items():
+        if no == cmdno:
+            lst.append(key)
+    text = '|'.join(lst)
+    return text
 
 
 def pack(to_user, from_user, end_flag, data_type, data_orig):

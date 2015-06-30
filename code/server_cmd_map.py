@@ -15,4 +15,8 @@ MAP_CMD_FUN = {pt.CMD_NAME: sc.cmd_name,
                pt.CMD_ADD_FRIEND: sc.cmd_add_friend,
                pt.CMD_DEL_FRIEND: sc.cmd_del_friend,
                pt.CMD_CHAT: sc.cmd_chat,
+               pt.CMD_UPDATE_USERS: sc.cmd_update_users,
+               pt.CMD_GET_CMDS: sc.cmd_get_cmds,
+               pt.CMD_ADD_CMD: sc.cmd_add_cmd,
+               pt.CMD_DEL_CMD: sc.cmd_del_cmd,
                pt.CMD_QUIT: sc.cmd_quit}
